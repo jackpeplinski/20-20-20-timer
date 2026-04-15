@@ -1,0 +1,129 @@
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.app h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.task-input-label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  max-width: 360px;
+  font-size: 0.9rem;
+  color: var(--text-h, inherit);
+}
+
+.task-input-label input {
+  font-size: 1rem;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #ccc);
+  background: transparent;
+  color: inherit;
+}
+
+.task-input-label input:disabled {
+  opacity: 0.6;
+}
+
+.phase-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  min-height: 1.4em;
+}
+
+.timer-display {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.controls button {
+  font-size: 1rem;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #ccc);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.controls button:hover:not(:disabled) {
+  border-color: var(--accent, #4a90e2);
+}
+
+.app.phase-work .timer-display {
+  color: #4a90e2;
+}
+
+.app.phase-rest .timer-display {
+  color: #2ecc71;
+}
+
+.history-section {
+  width: 100%;
+  margin-top: 24px;
+  text-align: left;
+}
+
+.history-section h2 {
+  font-size: 1.1rem;
+  margin: 0 0 12px;
+}
+
+.history-empty {
+  color: #888;
+  font-style: italic;
+}
+
+.history-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.history-tile {
+  border: 1px solid var(--border, #ccc);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.history-task {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.history-time {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 4px;
+}
