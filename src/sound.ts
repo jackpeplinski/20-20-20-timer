@@ -19,7 +19,7 @@ function getContext(): AudioContext {
 function getAudio(): HTMLAudioElement {
   if (!audio) {
     audio = new Audio(`${import.meta.env.BASE_URL}ocean-waves.mp3`)
-    audio.preload = 'auto'
+    audio.preload = 'none'
   }
   return audio
 }

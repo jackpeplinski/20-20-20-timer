@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jackpeplinski.github.io/20-20-20-timer/sitemap.xml
