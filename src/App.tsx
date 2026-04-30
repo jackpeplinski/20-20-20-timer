@@ -140,6 +140,19 @@ function App() {
     }
   }
 
+  function handleRestart() {
+    if (phase === 'idle') return
+    if (phase === 'work') {
+      secondsRef.current = WORK_SECONDS
+      setSecondsLeft(WORK_SECONDS)
+    } else {
+      secondsRef.current = REST_SECONDS
+      setSecondsLeft(REST_SECONDS)
+      startRestTone()
+    }
+    setIsPaused(false)
+  }
+
   function handleCancel() {
     if (phase === 'idle') return
     stopRestTone()
@@ -237,6 +250,9 @@ function App() {
           <>
             <button type="button" onClick={handlePauseToggle}>
               {isPaused ? 'Resume' : 'Pause'}
+            </button>
+            <button type="button" onClick={handleRestart}>
+              Restart
             </button>
             <button type="button" onClick={handleSkip}>
               Skip

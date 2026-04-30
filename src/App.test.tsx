@@ -227,4 +227,30 @@ describe('20-20-20 Timer', () => {
     // Back to the natural unset state for a future block.
     expect(gridCells()[71].className).toContain('status-future')
   })
+
+  it('restart during work resets the 20-minute countdown', async () => {
+    render(<App />)
+    clickButton(/^start$/i)
+    await tick(10_000)
+    expect(getTimerDisplay()).toHaveTextContent('19:50')
+
+    clickButton(/restart/i)
+    expect(getTimerDisplay()).toHaveTextContent('20:00')
+    expect(screen.getByText('Working')).toBeInTheDocument()
+  })
+
+  it('restart during rest resets the 20-second countdown and re-triggers tone', async () => {
+    render(<App />)
+    clickButton(/^start$/i)
+    await tick(WORK_SECONDS * 1000)
+    expect(getTimerDisplay()).toHaveTextContent('00:20')
+    expect(startRestTone).toHaveBeenCalledTimes(1)
+
+    await tick(5000)
+    expect(getTimerDisplay()).toHaveTextContent('00:15')
+
+    clickButton(/restart/i)
+    expect(getTimerDisplay()).toHaveTextContent('00:20')
+    expect(startRestTone).toHaveBeenCalledTimes(2)
+  })
 })
