@@ -98,6 +98,18 @@ function App() {
     setIsPaused(false)
   }
 
+  function handleSkip() {
+    if (phase === 'work') {
+      setSecondsLeft(REST_SECONDS)
+      setPhase('rest')
+      setIsPaused(false)
+      startRestTone()
+    } else if (phase === 'rest') {
+      setSecondsLeft(0)
+      stopRestTone()
+    }
+  }
+
   function handleAcknowledge() {
     stopRestTone()
     setHistory((h) => [...h, { task: committedTask, completedAt: new Date() }])
@@ -159,6 +171,11 @@ function App() {
             <button type="button" onClick={handleRestart}>
               Restart
             </button>
+            {!restExpired && (
+              <button type="button" onClick={handleSkip}>
+                Skip
+              </button>
+            )}
           </>
         )}
         {restExpired && (

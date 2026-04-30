@@ -189,4 +189,33 @@ describe('20-20-20 Timer', () => {
     // startRestTone called once on entering rest, again on restart.
     expect(startRestTone).toHaveBeenCalledTimes(2)
   })
+
+  it('skip during work jumps straight to rest', () => {
+    render(<App />)
+    typeTask('Quick task')
+    clickButton(/start/i)
+
+    clickButton(/skip/i)
+    expect(screen.getByText(/Rest — look 20 ft away/)).toBeInTheDocument()
+    expect(getTimerDisplay()).toHaveTextContent('00:20')
+    expect(startRestTone).toHaveBeenCalledTimes(1)
+  })
+
+  it('skip during rest jumps to acknowledge', async () => {
+    render(<App />)
+    typeTask('Another task')
+    clickButton(/start/i)
+    await tick(WORK_SECONDS * 1000)
+
+    clickButton(/skip/i)
+    expect(getTimerDisplay()).toHaveTextContent('00:00')
+    expect(stopRestTone).toHaveBeenCalled()
+    expect(
+      screen.getByRole('button', { name: /acknowledge/i }),
+    ).toBeInTheDocument()
+    // Skip button hidden once rest is expired.
+    expect(
+      screen.queryByRole('button', { name: /skip/i }),
+    ).not.toBeInTheDocument()
+  })
 })
