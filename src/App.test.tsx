@@ -5,16 +5,19 @@ vi.mock('./sound', () => ({
   startRestTone: vi.fn(),
   stopRestTone: vi.fn(),
   playChime: vi.fn(),
+  setVolume: vi.fn(),
 }))
 
 import App, { WORK_SECONDS, REST_SECONDS } from './App'
-import { startRestTone, stopRestTone, playChime } from './sound'
+import { startRestTone, stopRestTone, playChime, setVolume } from './sound'
 
 beforeEach(() => {
   vi.useFakeTimers()
   vi.mocked(startRestTone).mockClear()
   vi.mocked(stopRestTone).mockClear()
   vi.mocked(playChime).mockClear()
+  vi.mocked(setVolume).mockClear()
+  localStorage.clear()
 })
 
 afterEach(() => {
@@ -252,5 +255,51 @@ describe('20-20-20 Timer', () => {
     clickButton(/restart/i)
     expect(getTimerDisplay()).toHaveTextContent('00:20')
     expect(startRestTone).toHaveBeenCalledTimes(2)
+  })
+
+  it('settings gear toggles the settings panel', () => {
+    render(<App />)
+    expect(screen.queryByLabelText(/settings/i, { selector: 'div' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /settings/i }))
+    expect(screen.getByLabelText(/settings/i, { selector: 'div' })).toBeInTheDocument()
+    expect(screen.getByText(/volume/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /settings/i }))
+    expect(screen.queryByLabelText(/settings/i, { selector: 'div' })).not.toBeInTheDocument()
+  })
+
+  it('volume defaults to 75% and calls setVolume on mount', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /settings/i }))
+    expect(screen.getByText('Volume: 75%')).toBeInTheDocument()
+    expect(setVolume).toHaveBeenCalledWith(0.75)
+  })
+
+  it('volume slider persists to localStorage and calls setVolume', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /settings/i }))
+    const slider = screen.getByRole('slider')
+    fireEvent.change(slider, { target: { value: '0.5' } })
+
+    expect(screen.getByText('Volume: 50%')).toBeInTheDocument()
+    expect(localStorage.getItem('timer-volume')).toBe('0.5')
+    expect(setVolume).toHaveBeenCalledWith(0.5)
+  })
+
+  it('loads saved volume from localStorage', () => {
+    localStorage.setItem('timer-volume', '0.3')
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: /settings/i }))
+    expect(screen.getByText('Volume: 30%')).toBeInTheDocument()
+    expect(setVolume).toHaveBeenCalledWith(0.3)
+  })
+
+  it('grid cell title shows time range on hover', () => {
+    render(<App />)
+    const cells = gridCells()
+    const firstCell = cells[0] as HTMLButtonElement
+    expect(firstCell.title).toMatch(/12:00 AM/)
+    expect(firstCell.title).toMatch(/12:20 AM/)
   })
 })

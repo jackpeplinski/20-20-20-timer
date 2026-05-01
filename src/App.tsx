@@ -1,6 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { startRestTone, stopRestTone } from './sound'
+import { startRestTone, stopRestTone, setVolume } from './sound'
+
+const VOLUME_KEY = 'timer-volume'
+const DEFAULT_VOLUME = 0.75
+
+function loadVolume(): number {
+  try {
+    const stored = localStorage.getItem(VOLUME_KEY)
+    if (stored !== null) {
+      const v = parseFloat(stored)
+      if (!isNaN(v) && v >= 0 && v <= 1) return v
+    }
+  } catch {
+    // localStorage may be unavailable
+  }
+  return DEFAULT_VOLUME
+}
 
 type Phase = 'idle' | 'work' | 'rest'
 
@@ -33,7 +49,13 @@ function blockIndex(d: Date): number {
 function blockTimeLabel(i: number): string {
   const h = Math.floor((i * BLOCK_MINUTES) / 60)
   const m = (i * BLOCK_MINUTES) % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  const h12 = h % 12 || 12
+  const ampm = h < 12 ? 'AM' : 'PM'
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+}
+
+function blockTimeRange(i: number): string {
+  return `${blockTimeLabel(i)} – ${blockTimeLabel(i + 1)}`
 }
 
 function formatTime(s: number): string {
@@ -76,6 +98,12 @@ function App() {
   const [editText, setEditText] = useState<string>('')
   const [dayBlocks, setDayBlocks] = useState<Record<number, RestStatus>>({})
   const [now, setNow] = useState<Date>(() => new Date())
+  const [showSettings, setShowSettings] = useState(false)
+  const [volume, setVolumeState] = useState<number>(loadVolume)
+
+  useEffect(() => {
+    setVolume(volume)
+  }, [volume])
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000)
@@ -209,6 +237,16 @@ function App() {
     if (editingId === id) handleCancelEdit()
   }
 
+  function handleVolumeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = parseFloat(e.target.value)
+    setVolumeState(v)
+    try {
+      localStorage.setItem(VOLUME_KEY, String(v))
+    } catch {
+      // localStorage may be unavailable
+    }
+  }
+
   function handleCycleBlock(i: number) {
     setDayBlocks((d) => {
       const next = { ...d }
@@ -233,7 +271,34 @@ function App() {
 
   return (
     <main className={`app phase-${phase}`}>
-      <h1>20-20-20 Timer</h1>
+      <div className="header-row">
+        <h1>20-20-20 Timer</h1>
+        <button
+          type="button"
+          className="gear-button"
+          onClick={() => setShowSettings((s) => !s)}
+          aria-label="Settings"
+          title="Settings"
+        >
+          &#9881;
+        </button>
+      </div>
+
+      {showSettings && (
+        <div className="settings-panel" aria-label="settings">
+          <label className="volume-label">
+            Volume: {Math.round(volume * 100)}%
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={handleVolumeChange}
+            />
+          </label>
+        </div>
+      )}
 
       <div className="phase-label">{phaseLabel}</div>
       <div className="timer-display" aria-label="time remaining">
@@ -349,18 +414,19 @@ function App() {
             const status = dayBlocks[i]
             let cls = 'history-cell'
             let label: string
+            const range = blockTimeRange(i)
             if (status) {
               cls += ` status-${status}`
-              label = `${blockTimeLabel(i)} — ${status}`
+              label = `${range} — ${status}`
             } else if (i < currentBlock) {
               cls += ' status-missed'
-              label = `${blockTimeLabel(i)} — missed`
+              label = `${range} — missed`
             } else if (i === currentBlock) {
               cls += ' status-current'
-              label = `${blockTimeLabel(i)} — current block`
+              label = `${range} — current block`
             } else {
               cls += ' status-future'
-              label = `${blockTimeLabel(i)} — upcoming`
+              label = `${range} — upcoming`
             }
             return (
               <li key={i}>

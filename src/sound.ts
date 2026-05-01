@@ -1,9 +1,11 @@
 // Audio for the rest phase.
 // - startRestTone / stopRestTone play an ocean-waves mp3 during the 20-second rest.
 // - playChime plays a short bell tone when the rest ends.
+// - setVolume controls both the audio element and the chime gain.
 
 let audio: HTMLAudioElement | null = null
 let audioContext: AudioContext | null = null
+let currentVolume = 0.75
 
 function getContext(): AudioContext {
   if (!audioContext) {
@@ -24,8 +26,14 @@ function getAudio(): HTMLAudioElement {
   return audio
 }
 
+export function setVolume(v: number): void {
+  currentVolume = Math.max(0, Math.min(1, v))
+  if (audio) audio.volume = currentVolume
+}
+
 export function startRestTone(): void {
   const el = getAudio()
+  el.volume = currentVolume
   if (!el.paused) return
   el.currentTime = 0
   void el.play().catch(() => {
@@ -47,7 +55,7 @@ export function playChime(): void {
   const gain = ctx.createGain()
   gain.connect(ctx.destination)
   gain.gain.setValueAtTime(0, now)
-  gain.gain.linearRampToValueAtTime(0.2, now + 0.02)
+  gain.gain.linearRampToValueAtTime(currentVolume * 0.25, now + 0.02)
   gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.6)
 
   for (const freq of [880, 1318.5]) {
